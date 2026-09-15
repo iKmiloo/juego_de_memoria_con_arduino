@@ -54,10 +54,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(circle at 20% 10%, rgba(61,220,132,0.06), transparent 40%),
-      radial-gradient(circle at 85% 90%, rgba(77,155,255,0.06), transparent 40%),
-      var(--pcb-bg);
+    background: var(--pcb-bg);
     color: var(--silk);
     font-family: 'IBM Plex Mono', monospace;
     display: flex;
@@ -65,6 +62,36 @@
     align-items: center;
     padding: 32px 16px 64px;
   }
+
+  /* ---- Collage de fondo ---- */
+  .bg-collage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    pointer-events: none;
+  }
+
+  .bg-collage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Overlay oscuro encima del collage para mantener el juego legible */
+  .bg-collage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(61,220,132,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(77,155,255,0.06), transparent 40%),
+      rgba(10, 23, 16, 0.82);
+  }
+
 
   /* trazas de circuito como fondo decorativo */
   .traces {
@@ -320,9 +347,18 @@
     main { flex-direction: column; align-items: center; }
     .side-panel { width: 100%; max-width: 300px; }
   }
+
 </style>
 </head>
 <body>
+
+<!-- ========== FONDO COLLAGE ========== -->
+<div class="bg-collage">
+  <img src="images/WhatsApp Image 2026-09-15 at 3.47.56 PM.jpeg" alt="">
+  <img src="images/WhatsApp Image 2026-09-15 at 3.48.26 PM.jpeg" alt="">
+  <img src="images/WhatsApp Image 2026-09-15 at 3.48.52 PM.jpeg" alt="">
+  <img src="images/WhatsApp Image 2026-09-15 at 3.48.38 PM.jpeg" alt="">
+</div>
 
 <svg class="traces" viewBox="0 0 1000 600" preserveAspectRatio="none">
   <g stroke="#3ddc84" stroke-width="1" fill="none">
@@ -647,6 +683,7 @@
   loadLeaderboard();
 })();
 </script>
+
 
 </body>
 </html>
