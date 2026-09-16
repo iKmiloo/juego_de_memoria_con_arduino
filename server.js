@@ -83,13 +83,22 @@ app.get('/api/leaderboard', (req, res) => {
 });
 
 app.post('/api/score', (req, res) => {
-  const { name, level } = req.body;
+  const { name, lastName, university, level } = req.body;
   if (!name || typeof level !== 'number') {
     return res.status(400).json({ error: 'name (string) y level (number) son requeridos' });
   }
-  const cleanName = String(name).trim().slice(0, 20) || 'Anónimo';
+  const cleanName     = String(name).trim().slice(0, 30) || 'Anónimo';
+  const cleanLastName = String(lastName || '').trim().slice(0, 30);
+  const cleanUniv     = String(university || '').trim().slice(0, 80);
   const scores = loadScores();
-  const entry = { id: generateId(), name: cleanName, level, created_at: new Date().toISOString() };
+  const entry = {
+    id: generateId(),
+    name: cleanName,
+    lastName: cleanLastName,
+    university: cleanUniv,
+    level,
+    created_at: new Date().toISOString()
+  };
   scores.push(entry);
   const saved = saveScores(scores);
   if (!saved) return res.status(500).json({ error: 'no se pudo guardar el puntaje' });
