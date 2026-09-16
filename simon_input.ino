@@ -6,103 +6,76 @@
 
   Conexiones:
     Botones (INPUT_PULLUP, activos en LOW):
-      Rojo    -> pin 2
-      Verde   -> pin 3
-      Azul    -> pin 4
-      Amarillo-> pin 5
+      Boton 1 (Rojo)     -> pin 2  -> envia BTN:0
+      Boton 2 (Verde)    -> pin 3  -> envia BTN:1
+      Boton 3 (Azul)     -> pin 4  -> envia BTN:2
+      Boton 4 (Amarillo) -> pin 5  -> envia BTN:3
       (el otro terminal de cada botón va a GND)
-
-    LEDs (feedback físico opcional), con resistencia 220ohm en serie:
-      Rojo    -> pin 8
-      Verde   -> pin 9
-      Azul    -> pin 10
-      Amarillo-> pin 11
 
   Protocolo Serial (9600 baudios):
     Arduino -> PC:  "BTN:0" .. "BTN:3"   (botón presionado)
-    PC -> Arduino:  "LED:0:ON" / "LED:0:OFF"   (controla LED n)
-                    "LED:ALL:OFF"                (apaga todos)
 */
 
-const int NUM_COLORS = 4;
-const int buttonPins[NUM_COLORS] = {2, 3, 4, 5};
-const int ledPins[NUM_COLORS]    = {8, 9, 10, 11};
+const int boton1 = 2;
+const int boton2 = 3;
+const int boton3 = 4;
+const int boton4 = 5;
 
-bool lastState[NUM_COLORS];
-unsigned long lastDebounceTime[NUM_COLORS];
-const unsigned long DEBOUNCE_MS = 30;
-
-String serialBuffer = "";
+bool estadoAnterior1 = HIGH;
+bool estadoAnterior2 = HIGH;
+bool estadoAnterior3 = HIGH;
+bool estadoAnterior4 = HIGH;
 
 void setup() {
   Serial.begin(9600);
 
-  for (int i = 0; i < NUM_COLORS; i++) {
-    pinMode(buttonPins[i], INPUT_PULLUP);
-    pinMode(ledPins[i], OUTPUT);
-    digitalWrite(ledPins[i], LOW);
-    lastState[i] = HIGH; // no presionado
-    lastDebounceTime[i] = 0;
-  }
+  pinMode(boton1, INPUT_PULLUP);
+  pinMode(boton2, INPUT_PULLUP);
+  pinMode(boton3, INPUT_PULLUP);
+  pinMode(boton4, INPUT_PULLUP);
+
+  Serial.println("Sistema iniciado");
+  Serial.println("Esperando botones...");
 }
 
 void loop() {
-  readButtons();
-  readSerialCommands();
-}
 
-void readButtons() {
-  for (int i = 0; i < NUM_COLORS; i++) {
-    bool reading = digitalRead(buttonPins[i]);
+  bool estado1 = digitalRead(boton1);
+  bool estado2 = digitalRead(boton2);
+  bool estado3 = digitalRead(boton3);
+  bool estado4 = digitalRead(boton4);
 
-    if (reading != lastState[i]) {
-      lastDebounceTime[i] = millis();
+  // Boton 1 (pin 2) -> BTN:0
+  if (estado1 != estadoAnterior1) {
+    if (estado1 == LOW) {
+      Serial.println("BTN:0");
     }
-
-    if ((millis() - lastDebounceTime[i]) > DEBOUNCE_MS) {
-      // Flanco de presión: pasó de HIGH (suelto) a LOW (presionado)
-      if (reading == LOW && lastState[i] == HIGH) {
-        Serial.print("BTN:");
-        Serial.println(i);
-      }
-    }
-
-    lastState[i] = reading;
+    estadoAnterior1 = estado1;
   }
-}
 
-void readSerialCommands() {
-  while (Serial.available() > 0) {
-    char c = Serial.read();
-    if (c == '\n') {
-      handleCommand(serialBuffer);
-      serialBuffer = "";
-    } else if (c != '\r') {
-      serialBuffer += c;
+  // Boton 2 (pin 3) -> BTN:1
+  if (estado2 != estadoAnterior2) {
+    if (estado2 == LOW) {
+      Serial.println("BTN:1");
     }
+    estadoAnterior2 = estado2;
   }
-}
 
-void handleCommand(String cmd) {
-  cmd.trim();
-  if (cmd.length() == 0) return;
-
-  // Formato: LED:<idx|ALL>:<ON|OFF>
-  if (cmd.startsWith("LED:")) {
-    int firstColon = cmd.indexOf(':', 4);
-    if (firstColon == -1) return;
-
-    String target = cmd.substring(4, firstColon);
-    String action = cmd.substring(firstColon + 1);
-
-    if (target == "ALL") {
-      bool on = (action == "ON");
-      for (int i = 0; i < NUM_COLORS; i++) digitalWrite(ledPins[i], on ? HIGH : LOW);
-    } else {
-      int idx = target.toInt();
-      if (idx >= 0 && idx < NUM_COLORS) {
-        digitalWrite(ledPins[idx], action == "ON" ? HIGH : LOW);
-      }
+  // Boton 3 (pin 4) -> BTN:2
+  if (estado3 != estadoAnterior3) {
+    if (estado3 == LOW) {
+      Serial.println("BTN:2");
     }
+    estadoAnterior3 = estado3;
   }
+
+  // Boton 4 (pin 5) -> BTN:3
+  if (estado4 != estadoAnterior4) {
+    if (estado4 == LOW) {
+      Serial.println("BTN:3");
+    }
+    estadoAnterior4 = estado4;
+  }
+
+  delay(20);
 }

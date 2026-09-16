@@ -541,6 +541,45 @@
       padding: 14px 0;
     }
 
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      gap: 8px;
+    }
+
+    .pagination.hidden {
+      display: none;
+    }
+
+    .page-btn {
+      background: transparent;
+      border: 1px solid var(--copper-dim);
+      color: var(--copper);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .page-btn:hover:not(:disabled) {
+      border-color: var(--copper);
+      background: rgba(200, 163, 90, 0.08);
+    }
+
+    .page-btn:disabled {
+      opacity: 0.25;
+      cursor: default;
+    }
+
+    .page-info {
+      font-size: 10px;
+      color: var(--silk-dim);
+    }
+
     @media (max-width: 680px) {
       main {
         flex-direction: column;
@@ -647,6 +686,13 @@
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination hidden" id="pagination">
+        <button class="page-btn" id="prevBtn">&#8592; Anterior</button>
+        <span class="page-info" id="pageInfo"></span>
+        <button class="page-btn" id="nextBtn">Siguiente &#8594;</button>
+      </div>
+
     </aside>
   </main>
 
@@ -673,6 +719,14 @@
       const lastNameInput = document.getElementById('lastNameInput');
       const universitySelect = document.getElementById('universitySelect');
       const leaderboardBody = document.getElementById('leaderboardBody');
+      const pagination      = document.getElementById('pagination');
+      const prevBtn         = document.getElementById('prevBtn');
+      const nextBtn         = document.getElementById('nextBtn');
+      const pageInfo        = document.getElementById('pageInfo');
+
+      const PAGE_SIZE = 10;
+      let currentPage = 0;
+      let allScores   = [];
 
       let sequence = [];
       let playerStep = 0;
@@ -824,14 +878,16 @@
       }
 
       async function handleInput(index) {
-        if (!acceptingInput) return;
         if (index < 0 || index > 3) return;
 
-        // feedback visual e inmediato al presionar
+        // feedback visual e inmediato al presionar (siempre)
         pads[index].classList.add('lit');
         sendLed(index, true);
         playTone(index, 200);
         setTimeout(() => { pads[index].classList.remove('lit'); sendLed(index, false); }, 200);
+
+        // Si no es el turno del jugador, no avanzamos la lógica
+        if (!acceptingInput) return;
 
         if (index === sequence[playerStep]) {
           playerStep++;
@@ -926,41 +982,45 @@
         } catch (e) { /* silencioso: no bloquea el juego */ }
       }
 
-      async function loadLeaderboard() {
-        try {
-          const res = await fetch('/api/leaderboard');
-          const rows = await res.json();
-          if (!rows.length) {
-            leaderboardBody.innerHTML = '<tr class="empty-row"><td colspan="5">Aún nadie ha jugado</td></tr>';
-            return;
-          }
-          leaderboardBody.innerHTML = rows.map((r, i) => {
-            const fullName = escapeHtml((r.name + ' ' + (r.lastName || '')).trim());
-            const univName = escapeHtml(r.university || '');
-            const univData = UNIVERSITIES[r.university] || null;
+      // ---------- Renderizar una página del leaderboard ----------
+      function renderPage() {
+        const totalPages = Math.ceil(allScores.length / PAGE_SIZE);
+        const start = currentPage * PAGE_SIZE;
+        const pageRows = allScores.slice(start, start + PAGE_SIZE);
 
-            let logoCell;
-            if (univData) {
-              logoCell = `<img
+        if (!pageRows.length) {
+          leaderboardBody.innerHTML = '<tr class="empty-row"><td colspan="5">Aún nadie ha jugado</td></tr>';
+          pagination.classList.add('hidden');
+          return;
+        }
+
+        leaderboardBody.innerHTML = pageRows.map((r, i) => {
+          const globalIndex = start + i;
+          const fullName = escapeHtml((r.name + ' ' + (r.lastName || '')).trim());
+          const univName = escapeHtml(r.university || '');
+          const univData = UNIVERSITIES[r.university] || null;
+
+          let logoCell;
+          if (univData) {
+            logoCell = `<img
             class="univ-logo"
             src="${univData.logo}"
             alt="${univName}"
             title="${univName}"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
           ><span class="logo-initials" style="background:${univData.bg};display:none">${univData.short}</span>`;
-            } else if (univName) {
-              // fallback: iniciales con color genérico
-              const initials = univName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase();
-              logoCell = `<span class="logo-initials" style="background:#444">${initials}</span>`;
-            } else {
-              logoCell = '';
-            }
+          } else if (univName) {
+            const initials = univName.split(' ').map(w => w[0]).join('').slice(0, 4).toUpperCase();
+            logoCell = `<span class="logo-initials" style="background:#444">${initials}</span>`;
+          } else {
+            logoCell = '';
+          }
 
-            const shortUniv = univData ? univData.short : (r.university ? r.university.split(' ').map(w => w[0]).join('').slice(0, 5) : '');
+          const shortUniv = univData ? univData.short : (r.university ? r.university.split(' ').map(w => w[0]).join('').slice(0, 5) : '');
 
-            return `
+          return `
         <tr>
-          <td class="rank-col">${i + 1}</td>
+          <td class="rank-col">${globalIndex + 1}</td>
           <td class="logo-col">${logoCell}</td>
           <td class="player-col">
             <div class="player-name">${fullName}</div>
@@ -971,11 +1031,39 @@
             <button class="delete-btn" data-id="${escapeHtml(r.id)}" title="Borrar este registro" aria-label="Borrar registro de ${fullName}">×</button>
           </td>
         </tr>`;
-          }).join('');
-        } catch (e) {
-          leaderboardBody.innerHTML = '<tr class="empty-row"><td colspan="5">no se pudo cargar</td></tr>';
+        }).join('');
+
+        // Paginador: solo visible si hay más de una página
+        if (totalPages > 1) {
+          pagination.classList.remove('hidden');
+          prevBtn.disabled = currentPage === 0;
+          nextBtn.disabled = currentPage >= totalPages - 1;
+          pageInfo.textContent = `Pág. ${currentPage + 1} / ${totalPages}`;
+        } else {
+          pagination.classList.add('hidden');
         }
       }
+
+      async function loadLeaderboard() {
+        try {
+          const res = await fetch('/api/leaderboard');
+          allScores = await res.json();
+          currentPage = 0;
+          renderPage();
+        } catch (e) {
+          leaderboardBody.innerHTML = '<tr class="empty-row"><td colspan="5">no se pudo cargar</td></tr>';
+          pagination.classList.add('hidden');
+        }
+      }
+
+      // Botones de paginación
+      prevBtn.addEventListener('click', () => {
+        if (currentPage > 0) { currentPage--; renderPage(); }
+      });
+      nextBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(allScores.length / PAGE_SIZE);
+        if (currentPage < totalPages - 1) { currentPage++; renderPage(); }
+      });
 
       leaderboardBody.addEventListener('click', async (e) => {
         const btn = e.target.closest('.delete-btn');

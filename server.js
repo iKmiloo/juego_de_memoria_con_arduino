@@ -77,8 +77,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/leaderboard', (req, res) => {
   const top = loadScores()
     .slice()
-    .sort((a, b) => b.level - a.level || new Date(a.created_at) - new Date(b.created_at))
-    .slice(0, 20);
+    .sort((a, b) => b.level - a.level || new Date(a.created_at) - new Date(b.created_at));
   res.json(top);
 });
 
@@ -196,6 +195,7 @@ async function setupSerial() {
 
     parser.on('data', (line) => {
       line = line.trim();
+      console.log('Recibido de Arduino:', line);
       if (line.startsWith('BTN:')) {
         const index = parseInt(line.split(':')[1], 10);
         if (!Number.isNaN(index)) {
