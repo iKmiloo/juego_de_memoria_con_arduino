@@ -46,8 +46,7 @@ juego_de_memoria_con_arduino/
 ├── public/
 │   ├── index.html           → interfaz completa del juego (HTML + CSS + JS)
 │   ├── images/              → fotos del hackathon (fondo del collage)
-│   │   └── logos/           → logos de las universidades del ranking
-│   └── fonts/               → (opcional) fuentes .woff2 auto-hospedadas
+│       └── logos/           → logos de las universidades del ranking
 ├── server.js                → puente Serial↔WebSocket + API REST + ranking
 ├── package.json             → dependencias: express, ws, serialport
 ├── package-lock.json        → versiones exactas (sí se versiona)
