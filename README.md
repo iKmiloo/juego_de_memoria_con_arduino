@@ -15,10 +15,27 @@ se generan con la Web Audio API y el frontend no carga ningún recurso externo
 | Requisito | Detalle |
 |-----------|---------|
 | Node.js | **16 o superior** (`serialport@12` lo exige). Probado con Node 26 |
+| npm | Viene incluido con Node (probado con npm 11.19.0); se usa para `npm install` y `npm start` |
 | Arduino IDE | 1.x o 2.x, con la placa *Arduino Uno* instalada |
 | Hardware | Arduino Uno (o Nano), 4 pulsadores, protoboard y cables |
 | Navegador | Chrome / Edge / Firefox recientes (WebSocket + Web Audio API) |
 | Driver USB | En Windows, los clones suelen necesitar el driver **CH340/CH341** |
+
+## Inicio rápido
+
+```bash
+# 1. Instalar dependencias (crea node_modules/, no se versiona)
+npm install
+
+# 2. Levantar el servidor (serial + WebSocket + API del ranking)
+npm start
+
+# 3. Abrir el juego en el navegador
+#    http://localhost:3000
+```
+
+Antes de jugar con el circuito hay que **subir el firmware** al Arduino
+(ver sección 2). Si no tienes el Arduino a mano, igual puedes jugar con el mouse.
 
 ## Estructura
 
@@ -33,11 +50,16 @@ juego_de_memoria_con_arduino/
 │   └── fonts/               → (opcional) fuentes .woff2 auto-hospedadas
 ├── server.js                → puente Serial↔WebSocket + API REST + ranking
 ├── package.json             → dependencias: express, ws, serialport
-├── package-lock.json
+├── package-lock.json        → versiones exactas (sí se versiona)
+├── node_modules/            → dependencias instaladas; NO se versiona
 ├── leaderboard.json         → puntajes; se crea/actualiza solo
 ├── LICENSE                  → MIT
 └── README.md
 ```
+
+> `node_modules/` se genera con `npm install` y está en el `.gitignore`: no viaja
+> en el repositorio, así que hay que ejecutar `npm install` una vez en cada
+> equipo o clon nuevo.
 
 > `public/fonts/` es **opcional**: si la carpeta no existe, el navegador usa su
 > fuente monoespaciada por defecto y el juego funciona exactamente igual.
@@ -99,10 +121,16 @@ Al abrir el puerto verás el saludo del firmware (`Sistema iniciado` /
 ## 3. Instalar dependencias y levantar el servidor
 
 Este proyecto usa **Node.js 16 o superior**. Instala las dependencias una sola vez:
+esto crea la carpeta `node_modules/` con `express`, `ws`, `serialport` y sus
+dependencias transitivas.
 
 ```bash
 npm install
 ```
+
+> ℹ️ `node_modules/` **no se versiona** (está en el `.gitignore`) y `serialport`
+> incluye binarios precompilados para Windows/macOS/Linux, así que en principio no
+> necesitas compiladores. Hay que ejecutar `npm install` en cada equipo o clon.
 
 Luego levanta el servidor (las dos formas son equivalentes):
 
@@ -233,6 +261,8 @@ sigue funcionando y avisa por WebSocket (`status.connected = false`).
 | `No se pudo abrir el puerto serial` o `Access denied` | Otro programa lo tiene abierto: cierra el Monitor Serie del IDE u otra instancia de `server.js` |
 | `No se detectó Arduino automáticamente` | Copia el puerto que lista la consola y escríbelo en `SERIAL_PORT_PATH` |
 | No aparece ningún puerto en la lista | Falta el driver USB (CH340/CH341 en clones) o el cable es solo de carga |
+| `Cannot find module 'express'` / `'ws'` / `'serialport'` | Faltan las dependencias: ejecuta `npm install` en la carpeta del proyecto |
+| `EADDRINUSE: address already in use :::3000` | Ya hay otro servidor usando el puerto 3000: ciérralo o cambia `HTTP_PORT` |
 | Subir el sketch falla con "puerto en uso" | Detén el servidor con `Ctrl+C` y cierra el Monitor Serie |
 | Los botones no reaccionan en la web | Verifica el Monitor Serie a 9600 baudios y que un terminal de cada botón vaya a **GND** |
 | El estado dice "sin arduino — el mouse hace de circuito" | Es normal sin hardware: el juego sigue siendo jugable con el mouse |
@@ -250,6 +280,8 @@ sigue funcionando y avisa por WebSocket (`status.connected = false`).
   saldrá a la red.
 - Como el servidor ocupa el puerto serial, deja el sketch ya cargado antes de
   empezar la demo.
+- En un equipo recién clonado el orden es: `npm install` → subir el firmware →
+  `npm start`. Recuerda que `node_modules/` no viaja en el repositorio.
 
 ## Licencia
 

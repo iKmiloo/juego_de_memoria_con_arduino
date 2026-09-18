@@ -58,6 +58,8 @@ build/
 *.map
 
 # Dependency directories
+# node_modules/ la genera 'npm install' en cada equipo: son varios MB y se
+# reconstruye a partir de package.json + package-lock.json, por eso no se versiona.
 node_modules/
 jspm_packages/
 
@@ -175,6 +177,9 @@ vite.config.ts.timestamp-*
 *.bak
 *.tmp
 *~
+# Restos de merges, parches o conflictos sin resolver
+*.orig
+*.rej
 
 # ---- Datos locales del juego ----
 # leaderboard.json solo contiene los puntajes de la partida y lo regenera el
