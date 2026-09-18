@@ -15,7 +15,7 @@ se generan con la Web Audio API y el frontend no carga ningún recurso externo
 | Requisito | Detalle |
 |-----------|---------|
 | Node.js | **16 o superior** (`serialport@12` lo exige). Probado con Node 26 |
-| npm | Viene incluido con Node (probado con npm 11.19.0); se usa para `npm install` y `npm start` |
+| npm | Viene incluido con Node (probado con npm 11.19.0); se usa para `npm install` y `node server.js` |
 | Arduino IDE | 1.x o 2.x, con la placa *Arduino Uno* instalada |
 | Hardware | Arduino Uno (o Nano), 4 pulsadores, protoboard y cables |
 | Navegador | Chrome / Edge / Firefox recientes (WebSocket + Web Audio API) |
@@ -28,7 +28,7 @@ se generan con la Web Audio API y el frontend no carga ningún recurso externo
 npm install
 
 # 2. Levantar el servidor (serial + WebSocket + API del ranking)
-npm start
+node server.js
 
 # 3. Abrir el juego en el navegador
 #    http://localhost:3000
@@ -59,9 +59,6 @@ juego_de_memoria_con_arduino/
 > `node_modules/` se genera con `npm install` y está en el `.gitignore`: no viaja
 > en el repositorio, así que hay que ejecutar `npm install` una vez en cada
 > equipo o clon nuevo.
-
-> `public/fonts/` es **opcional**: si la carpeta no existe, el navegador usa su
-> fuente monoespaciada por defecto y el juego funciona exactamente igual.
 
 ## 1. Armar el circuito
 
@@ -136,7 +133,7 @@ Luego levanta el servidor (las dos formas son equivalentes):
 ```bash
 node server.js
 # o
-npm start
+node server.js
 ```
 
 El servidor **detecta el Arduino automáticamente**: busca un puerto cuyo
@@ -275,12 +272,11 @@ sigue funcionando y avisa por WebSocket (`status.connected = false`).
   — útil para probar la lógica sin hardware.
 - El leaderboard se crea automáticamente al registrar el primer puntaje.
 - **No depende de internet**: los sonidos se generan con Web Audio API y la página
-  no carga recursos externos. Si añades fuentes en `public/fonts/`, tampoco
-  saldrá a la red.
+  no carga recursos externos.
 - Como el servidor ocupa el puerto serial, deja el sketch ya cargado antes de
   empezar la demo.
 - En un equipo recién clonado el orden es: `npm install` → subir el firmware →
-  `npm start`. Recuerda que `node_modules/` no viaja en el repositorio.
+  `node server.js`. Recuerda que `node_modules/` no viaja en el repositorio.
 
 ## Licencia
 
