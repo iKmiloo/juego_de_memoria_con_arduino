@@ -1,4 +1,15 @@
-# Logs
+# ===========================================================================
+# Juego de Memoria con Arduino — archivos que NO se versionan
+# ===========================================================================
+
+# ---- Ruido del sistema operativo / sincronización (OneDrive, iCloud, etc.) ----
+.DS_Store
+Thumbs.db
+Thumbs.db:encryptable
+desktop.ini
+*.lnk
+
+# ---- Logs ----
 logs
 *.log
 npm-debug.log*
@@ -36,6 +47,15 @@ bower_components
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
+
+# ---- Arduino / arduino-cli ----
+# Salida de compilación del firmware: nunca se versiona, se regenera al subir
+build/
+.arduino/
+*.hex
+*.elf
+*.eep
+*.map
 
 # Dependency directories
 node_modules/
@@ -142,4 +162,24 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
+# ===========================================================================
+# Específico del proyecto: Juego de Memoria con Arduino
+# ===========================================================================
+
+# ---- Editores / IDE ----
+.vscode/
+.idea/
+.history/
+
+# ---- Respaldos y archivos temporales ----
+*.bak
+*.tmp
+*~
+
+# ---- Datos locales del juego ----
+# leaderboard.json solo contiene los puntajes de la partida y lo regenera el
+# servidor en cada equipo, así que no se versiona. Si quieres que deje de
+# rastrearse por completo (ya fue commiteado antes):
+#   git rm --cached leaderboard.json
 leaderboard.json
+leaderboard.json.*
