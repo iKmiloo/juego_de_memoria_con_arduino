@@ -15,7 +15,7 @@ se generan con la Web Audio API y el frontend no carga ningún recurso externo
 | Requisito | Detalle |
 |-----------|---------|
 | Node.js | **16 o superior** (`serialport@12` lo exige). Probado con Node 26 |
-| npm | Viene incluido con Node (probado con npm 11.19.0); se usa para `npm install` y `node server.js` |
+| npm | Viene incluido con Node (probado con npm 11.19.0); se usa para `npm install` (y para el atajo `npm start`) |
 | Arduino IDE | 1.x o 2.x, con la placa *Arduino Uno* instalada |
 | Hardware | Arduino Uno (o Nano), 4 pulsadores, protoboard y cables |
 | Navegador | Chrome / Edge / Firefox recientes (WebSocket + Web Audio API) |
@@ -46,7 +46,7 @@ juego_de_memoria_con_arduino/
 ├── public/
 │   ├── index.html           → interfaz completa del juego (HTML + CSS + JS)
 │   ├── images/              → fotos del hackathon (fondo del collage)
-│       └── logos/           → logos de las universidades del ranking
+│   │   └── logos/           → logos de las universidades del ranking
 ├── server.js                → puente Serial↔WebSocket + API REST + ranking
 ├── package.json             → dependencias: express, ws, serialport
 ├── package-lock.json        → versiones exactas (sí se versiona)
@@ -128,13 +128,14 @@ npm install
 > incluye binarios precompilados para Windows/macOS/Linux, así que en principio no
 > necesitas compiladores. Hay que ejecutar `npm install` en cada equipo o clon.
 
-Luego levanta el servidor (las dos formas son equivalentes):
+Luego levanta el servidor:
 
 ```bash
 node server.js
-# o
-node server.js
 ```
+
+> 💡 `npm start` hace exactamente lo mismo: es el script `start` definido en
+> `package.json`.
 
 El servidor **detecta el Arduino automáticamente**: busca un puerto cuyo
 fabricante diga `Arduino` o cuya ruta contenga `usb`/`acm`. Si todo va bien
